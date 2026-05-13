@@ -1,0 +1,22 @@
+# Dependencias
+/vendor/
+
+# Variables de entorno (¡NUNCA subir!)
+.env
+
+# Logs
+/logs/*.log
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Cache PHP
+*.cache
