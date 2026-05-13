@@ -1,0 +1,25 @@
+Options -Indexes
+
+# ─── Forzar HTTPS en producción (descomentar cuando tengas SSL) ───
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ─── Front Controller ───────────────────────────────────────────
+RewriteEngine On
+
+# Servir archivos/directorios reales directamente (assets)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Todo lo demás → index.php
+RewriteRule ^ index.php [L]
+
+# ─── Seguridad básica ───────────────────────────────────────────
+# Ocultar versión de PHP
+Header unset X-Powered-By
+
+# Prevenir clickjacking
+Header always append X-Frame-Options SAMEORIGIN
+
+# XSS protection
+Header always set X-Content-Type-Options nosniff

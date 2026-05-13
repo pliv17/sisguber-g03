@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<ruleset name="Abastecimiento">
+    <description>Estándar PSR-12 para el proyecto de Abastecimiento y Almacén.</description>
+
+    <!-- Rutas a analizar -->
+    <file>src</file>
+    <file>public/index.php</file>
+    <file>bootstrap.php</file>
+    <file>routes</file>
+
+    <!-- Excluir vendor y vistas (HTML mezclado con PHP es aceptable allí) -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/views/*</exclude-pattern>
+    <exclude-pattern>*/logs/*</exclude-pattern>
+
+    <!-- PSR-12 como base -->
+    <rule ref="PSR12"/>
+
+    <!-- PHP 8.2 como target -->
+    <config name="php_version" value="80200"/>
+
+    <!-- Extensión de archivos -->
+    <arg name="extensions" value="php"/>
+
+    <!-- Mostrar colores y progreso -->
+    <arg name="colors"/>
+    <arg value="p"/>
+</ruleset>
