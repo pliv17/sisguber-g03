@@ -36,7 +36,7 @@ declare(strict_types=1);
     <!-- CSS propio -->
     <link rel="stylesheet" href="<?= e(asset('css/app.css')) ?>">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100" data-current-path="<?= e(request_path()) ?>">
 
 <!-- ══════════════════════════════════════════
      NAVBAR principal
@@ -61,74 +61,25 @@ declare(strict_types=1);
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarMain">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= e(url('/')) ?>">
-                        <i class="bi bi-house me-1"></i>Inicio
-                    </a>
-                </li>
-
-                <!-- Maestros -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-card-list me-1"></i>Maestros
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><span class="dropdown-item-text text-muted small">Presupuestales</span></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/maestros/almacenes')) ?>">Almacenes</a></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/maestros/unidades')) ?>">Unidades de Medida</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><span class="dropdown-item-text text-muted small">Logístico</span></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/maestros/proveedores')) ?>">Proveedores</a></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/maestros/articulos')) ?>">Artículos / Bienes</a></li>
-                    </ul>
-                </li>
-
-                <!-- Abastecimiento -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-cart me-1"></i>Abastecimiento
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= e(url('/ordenes/compra')) ?>">Órdenes de Compra</a></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/ordenes/servicio')) ?>">Órdenes de Servicio</a></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/nea')) ?>">NEA</a></li>
-                    </ul>
-                </li>
-
-                <!-- Almacén -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-archive me-1"></i>Almacén
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= e(url('/almacen/pecosa')) ?>">PECOSA</a></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/almacen/vales')) ?>">Vales</a></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/almacen/stock')) ?>">Stock</a></li>
-                        <li><a class="dropdown-item" href="<?= e(url('/almacen/kardex')) ?>">Kardex</a></li>
-                    </ul>
-                </li>
-
-                <!-- Reportes -->
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= e(url('/reportes')) ?>">
-                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Reportes
-                    </a>
-                </li>
-
-            </ul>
-
-            <!-- Lado derecho de la navbar -->
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= e(url('/health')) ?>" target="_blank" title="Estado del sistema">
-                        <i class="bi bi-heart-pulse me-1"></i>Health
-                    </a>
-                </li>
-            </ul>
+        <div class="collapse navbar-collapse d-lg-flex align-items-lg-center" id="navbarMain">
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between w-100 flex-lg-grow-1 gap-2">
+                <?php require BASE_PATH . '/views/partials/nav-main.php'; ?>
+            </div>
         </div>
+    </div>
+
+    <div class="container-fluid border-top border-white border-opacity-25 py-1 px-3 small nav-context-bar d-none d-md-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="text-white-50 d-flex align-items-center gap-2 min-w-0">
+            <i class="bi bi-signpost-2 flex-shrink-0" aria-hidden="true"></i>
+            <code class="nav-context-path text-white-50 small mb-0 text-truncate"><?= e(request_path()) ?></code>
+        </div>
+        <?php
+        $_nav_ctx = nav_context_title($pageTitle ?? null);
+        if ($_nav_ctx !== ''): ?>
+            <div class="text-white text-opacity-90 text-truncate" title="<?= e($_nav_ctx) ?>">
+                <?= e($_nav_ctx) ?>
+            </div>
+        <?php endif; ?>
     </div>
 </nav>
 <!-- /NAVBAR -->
@@ -172,6 +123,8 @@ declare(strict_types=1);
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmAYEAqTbcBNopGFn5Q6dpLqFoGv"
     crossorigin="anonymous"
 ></script>
+<!-- URL base para Ajax (misma origen que APP_URL) -->
+<script>window.APP_URL_BASE = <?= json_encode(rtrim($_ENV['APP_URL'] ?? '', '/'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
 <!-- JS propio -->
 <script src="<?= e(asset('js/app.js')) ?>"></script>
 </body>

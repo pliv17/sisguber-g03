@@ -15,6 +15,46 @@
 $(function () {
 
     /* ════════════════════════════════════════════════════════════
+       0. Barra de navegación: móvil y accesibilidad
+       ════════════════════════════════════════════════════════════ */
+
+    (function initMainNavbar() {
+        const navbarCollapse = document.getElementById('navbarMain');
+        if (!navbarCollapse || typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        const collapse = bootstrap.Collapse.getOrCreateInstance(navbarCollapse, { toggle: false });
+
+        function hideNavbarMobile() {
+            if (window.innerWidth < 992 && navbarCollapse.classList.contains('show')) {
+                collapse.hide();
+            }
+        }
+
+        navbarCollapse.querySelectorAll('a.nav-link[href], a.dropdown-item[href]').forEach(function (anchor) {
+            const href = anchor.getAttribute('href');
+            if (!href || href === '#' || href.startsWith('javascript:')) {
+                return;
+            }
+            anchor.addEventListener('click', function () {
+                hideNavbarMobile();
+            });
+        });
+
+        // Cerrar dropdown abierto con Escape (refuerzo accesible)
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key !== 'Escape') {
+                return;
+            }
+            const openToggle = document.querySelector('.navbar .dropdown-toggle.show');
+            if (openToggle) {
+                bootstrap.Dropdown.getOrCreateInstance(openToggle).hide();
+            }
+        });
+    })();
+
+    /* ════════════════════════════════════════════════════════════
        1. Helper global de Ajax (envuelve $.ajax con manejo de errores)
        ════════════════════════════════════════════════════════════ */
 
@@ -69,7 +109,11 @@ $(function () {
             );
             $pingResult.html('');
 
-            appAjax('/api/ping')
+            const pingUrl = (typeof window.APP_URL_BASE === 'string' && window.APP_URL_BASE.length)
+                ? (window.APP_URL_BASE.replace(/\/$/, '') + '/api/ping')
+                : '/api/ping';
+
+            appAjax(pingUrl)
                 .then(function (data) {
                     $pingResult.html(
                         '<div class="alert alert-success alert-sm py-2 mb-0">' +

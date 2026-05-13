@@ -38,6 +38,33 @@ main.container-fluid {
     letter-spacing: 0.03em;
 }
 
+/* Enlace activo en barra superior (tema oscuro) */
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.dropdown-toggle.active {
+    font-weight: 600;
+    background-color: rgba(255, 255, 255, 0.14);
+    border-radius: 0.25rem;
+}
+
+.navbar-dark .dropdown-menu .dropdown-item.active,
+.navbar-dark .dropdown-menu .dropdown-item:active {
+    font-weight: 600;
+}
+
+/* Segunda fila de contexto bajo el menú */
+.nav-context-bar .nav-context-path {
+    background: transparent;
+    font-size: 0.8rem;
+}
+
+/* Menú desplegable ancho en escritorio (listas largas) */
+@media (min-width: 992px) {
+    .navbar .dropdown-menu-lg-start {
+        max-height: min(70vh, 28rem);
+        overflow-y: auto;
+    }
+}
+
 /* ── Cards ─────────────────────────────────────────── */
 .card {
     border-radius: 0.5rem;

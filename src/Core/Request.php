@@ -16,16 +16,25 @@ class Request
     }
 
     /**
-     * URI sin query string.
+     * URI sin query string, relativa al prefijo de ruta de APP_URL (si existe).
+     * Coincide con las rutas registradas en routes/web.php (p. ej. /maestros/almacenes).
      */
     public function uri(): string
     {
         $uri = $_SERVER['REQUEST_URI'] ?? '/';
-        // Eliminar query string
         if (false !== $pos = strpos($uri, '?')) {
             $uri = substr($uri, 0, $pos);
         }
-        return rawurldecode($uri);
+        $path = rawurldecode($uri);
+
+        $appUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+        $basePath = $appUrl !== '' ? (parse_url($appUrl, PHP_URL_PATH) ?: '') : '';
+        $basePath = rtrim((string) $basePath, '/');
+        if ($basePath !== '' && str_starts_with($path, $basePath)) {
+            $path = substr($path, strlen($basePath)) ?: '/';
+        }
+
+        return rtrim($path, '/') ?: '/';
     }
 
     /**

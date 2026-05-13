@@ -51,6 +51,86 @@ if (!function_exists('url')) {
     }
 }
 
+if (!function_exists('request_path')) {
+    /**
+     * Ruta actual normalizada (misma lógica que {@see \App\Core\Request::uri()}).
+     */
+    function request_path(): string
+    {
+        return (new \App\Core\Request())->uri();
+    }
+}
+
+if (!function_exists('nav_is_active_path')) {
+    function nav_is_active_path(string $path): bool
+    {
+        $path = rtrim($path, '/') ?: '/';
+        return request_path() === $path;
+    }
+}
+
+if (!function_exists('nav_is_active_prefix')) {
+    function nav_is_active_prefix(string $prefix): bool
+    {
+        $current = request_path();
+        $prefix = rtrim($prefix, '/');
+        if ($prefix === '' || $prefix === '/') {
+            return $current === '/';
+        }
+
+        return $current === $prefix || str_starts_with($current, $prefix . '/');
+    }
+}
+
+if (!function_exists('nav_is_active_any_prefix')) {
+    /** @param list<string> $prefixes */
+    function nav_is_active_any_prefix(array $prefixes): bool
+    {
+        foreach ($prefixes as $prefix) {
+            if (nav_is_active_prefix($prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('nav_active')) {
+    /** @return 'active'|'' */
+    function nav_active(string $path): string
+    {
+        return nav_is_active_path($path) ? 'active' : '';
+    }
+}
+
+if (!function_exists('nav_dd_active')) {
+    /**
+     * Marca el toggle de un dropdown cuando la ruta actual cae bajo alguno de los prefijos.
+     *
+     * @param list<string> $prefixes
+     * @return 'active'|''
+     */
+    function nav_dd_active(array $prefixes): string
+    {
+        return nav_is_active_any_prefix($prefixes) ? 'active' : '';
+    }
+}
+
+if (!function_exists('nav_context_title')) {
+    /**
+     * Título corto para la barra de contexto (quita sufijo "— Sistema…").
+     */
+    function nav_context_title(?string $pageTitle): string
+    {
+        if ($pageTitle === null || $pageTitle === '') {
+            return '';
+        }
+
+        return trim(preg_replace('/\s+[—–-]\s*Sistema.*$/iu', '', $pageTitle));
+    }
+}
+
 if (!function_exists('dd')) {
     /**
      * Dump & Die — Solo para depuración (no usar en producción).
