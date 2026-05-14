@@ -22,9 +22,9 @@ final class MeasureUnitService
         return $this->repo->paginate($q, $p['offset'], $p['per_page']);
     }
 
-    public function find(int $id): ?array
+    public function find(string $code): ?array
     {
-        return $this->repo->find($id);
+        return $this->repo->find($code);
     }
 
     /** @param array<string,mixed> $input @return array<string, list<string>> */
@@ -43,10 +43,11 @@ final class MeasureUnitService
         return $e;
     }
 
-    public function create(array $input): int
+    public function create(array $input): string
     {
         try {
-            return $this->repo->insert(trim((string) $input['code']), trim((string) $input['description']));
+            $this->repo->insert(trim((string) $input['code']), trim((string) $input['description']));
+            return trim((string) $input['code']);
         } catch (PDOException $ex) {
             if (($ex->errorInfo[1] ?? null) === 1062) {
                 throw new \RuntimeException('DUPLICATE', 409);
@@ -56,10 +57,10 @@ final class MeasureUnitService
         }
     }
 
-    public function update(int $id, array $input): void
+    public function update(string $oldCode, array $input): void
     {
         try {
-            $this->repo->update($id, trim((string) $input['code']), trim((string) $input['description']));
+            $this->repo->update($oldCode, trim((string) $input['code']), trim((string) $input['description']));
         } catch (PDOException $ex) {
             if (($ex->errorInfo[1] ?? null) === 1062) {
                 throw new \RuntimeException('DUPLICATE', 409);
@@ -69,9 +70,9 @@ final class MeasureUnitService
         }
     }
 
-    public function delete(int $id): bool
+    public function delete(string $code): bool
     {
-        return $this->repo->delete($id);
+        return $this->repo->delete($code);
     }
 
     /** @return list<list<string>> */

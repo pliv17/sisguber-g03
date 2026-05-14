@@ -22,9 +22,9 @@ final class BudgetGoalService
         return $this->repo->paginate($year, $q, $p['offset'], $p['per_page']);
     }
 
-    public function find(int $id): ?array
+    public function find(int $id, int $year, string $code): ?array
     {
-        return $this->repo->find($id);
+        return $this->repo->find($id, $year, $code);
     }
 
     /** @param array<string,mixed> $in @return array<string, list<string>> */
@@ -34,6 +34,14 @@ final class BudgetGoalService
         $y = (int) ($in['year'] ?? 0);
         if ($y < 2000 || $y > 2100) {
             $e['year'][] = 'Año inválido.';
+        }
+        $id = (int) ($in['id'] ?? 0);
+        if ($id <= 0) {
+            $e['id'][] = 'ID obligatorio.';
+        }
+        $c = trim((string) ($in['code'] ?? ''));
+        if ($c === '' || strlen($c) > 40) {
+            $e['code'][] = 'Código obligatorio, máx. 40.';
         }
         $n = trim((string) ($in['name'] ?? ''));
         if ($n === '' || strlen($n) > 255) {
@@ -51,29 +59,46 @@ final class BudgetGoalService
     {
         try {
             return $this->repo->insert(
+                (int) $in['id'],
                 (int) $in['year'],
+                trim((string) $in['code']),
                 trim((string) $in['name']),
                 isset($in['description']) ? trim((string) $in['description']) : null
             );
         } catch (PDOException $ex) {
+            if (($ex->errorInfo[1] ?? null) === 1062) {
+                throw new \RuntimeException('DUPLICATE', 409);
+            }
             error_log('[BudgetGoalService] ' . $ex->getMessage());
             throw new \RuntimeException('DB_ERROR', 500);
         }
     }
 
-    public function update(int $id, array $in): void
+    public function update(int $oldId, int $oldYear, string $oldCode, array $in): void
     {
-        $this->repo->update(
-            $id,
-            (int) $in['year'],
-            trim((string) $in['name']),
-            isset($in['description']) ? trim((string) $in['description']) : null
-        );
+        try {
+            $this->repo->update(
+                $oldId,
+                $oldYear,
+                $oldCode,
+                (int) $in['id'],
+                (int) $in['year'],
+                trim((string) $in['code']),
+                trim((string) $in['name']),
+                isset($in['description']) ? trim((string) $in['description']) : null
+            );
+        } catch (PDOException $ex) {
+            if (($ex->errorInfo[1] ?? null) === 1062) {
+                throw new \RuntimeException('DUPLICATE', 409);
+            }
+            error_log('[BudgetGoalService] ' . $ex->getMessage());
+            throw new \RuntimeException('DB_ERROR', 500);
+        }
     }
 
-    public function delete(int $id): bool
+    public function delete(int $id, int $year, string $code): bool
     {
-        return $this->repo->delete($id);
+        return $this->repo->delete($id, $year, $code);
     }
 
     /** @return list<list<string>> */

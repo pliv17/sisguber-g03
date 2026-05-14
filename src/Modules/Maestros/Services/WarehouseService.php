@@ -23,7 +23,7 @@ final class WarehouseService
         return $this->repo->paginate($q, $p['offset'], $p['per_page']);
     }
 
-    public function find(int $id): ?array
+    public function find(string $id): ?array
     {
         return $this->repo->find($id);
     }

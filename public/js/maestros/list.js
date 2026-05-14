@@ -116,6 +116,16 @@
                 });
         }
 
+        function pkValue(row) {
+            const pk = cfg.pk || 'id';
+            if (Array.isArray(pk)) {
+                return pk.map(function (key) {
+                    return String(row[key] ?? '');
+                }).join('-');
+            }
+            return row[pk];
+        }
+
         function renderRows(rows, meta) {
             if (!rows.length) {
                 $tbody.html('<tr><td class="text-muted p-3" colspan="' + ((cfg.columns || []).length + 1) + '">Sin registros.</td></tr>');
@@ -126,8 +136,7 @@
                     (cfg.columns || []).forEach(function (c) {
                         html += '<td>' + esc(row[c.key]) + '</td>';
                     });
-                    const pk = cfg.pk || 'id';
-                    const pkVal = row[pk];
+                    const pkVal = pkValue(row);
                     html += '<td class="text-end text-nowrap">'
                         + '<button type="button" class="btn btn-sm btn-outline-primary me-1 btn-edit" data-pk="' + esc(pkVal) + '">Editar</button>'
                         + '<button type="button" class="btn btn-sm btn-outline-danger btn-del" data-pk="' + esc(pkVal) + '">Eliminar</button>'

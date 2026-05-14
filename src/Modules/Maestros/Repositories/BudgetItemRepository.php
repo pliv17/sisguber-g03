@@ -36,43 +36,43 @@ final class BudgetItemRepository extends BaseMaestroRepository
         return [$stmt->fetchAll(), $total];
     }
 
-    public function find(int $id): ?array
+    public function find(int $id, int $year, string $code): ?array
     {
-        $s = $this->pdo()->prepare('SELECT id_partida AS id, ano_partida AS year, codigo_partida AS code, nombre_partida AS name FROM ' . self::T . ' WHERE id_partida=:id');
-        $s->execute([':id' => $id]);
+        $s = $this->pdo()->prepare('SELECT id_partida AS id, ano_partida AS year, codigo_partida AS code, nombre_partida AS name FROM ' . self::T . ' WHERE id_partida=:id AND ano_partida=:y AND codigo_partida=:c');
+        $s->execute([':id' => $id, ':y' => $year, ':c' => $code]);
         $r = $s->fetch();
 
         return $r === false ? null : $r;
     }
 
-    public function insert(int $year, string $code, string $name): int
+    public function insert(int $id, int $year, string $code, string $name): int
     {
-        $s = $this->pdo()->prepare('INSERT INTO ' . self::T . ' (ano_partida,codigo_partida,nombre_partida) VALUES (:y,:c,:n)');
-        $s->execute([':y' => $year, ':c' => $code, ':n' => $name]);
+        $s = $this->pdo()->prepare('INSERT INTO ' . self::T . ' (id_partida,ano_partida,codigo_partida,nombre_partida) VALUES (:id,:y,:c,:n)');
+        $s->execute([':id' => $id, ':y' => $year, ':c' => $code, ':n' => $name]);
 
-        return (int) $this->pdo()->lastInsertId();
+        return $id;
     }
 
-    public function update(int $id, int $year, string $code, string $name): void
+    public function update(int $oldId, int $oldYear, string $oldCode, int $newId, int $newYear, string $newCode, string $newName): void
     {
-        $s = $this->pdo()->prepare('UPDATE ' . self::T . ' SET ano_partida=:y,codigo_partida=:c,nombre_partida=:n WHERE id_partida=:id');
-        $s->execute([':y' => $year, ':c' => $code, ':n' => $name, ':id' => $id]);
+        $s = $this->pdo()->prepare('UPDATE ' . self::T . ' SET id_partida=:nid,ano_partida=:ny,codigo_partida=:nc,nombre_partida=:nn WHERE id_partida=:oid AND ano_partida=:oy AND codigo_partida=:oc');
+        $s->execute([':nid' => $newId, ':ny' => $newYear, ':nc' => $newCode, ':nn' => $newName, ':oid' => $oldId, ':oy' => $oldYear, ':oc' => $oldCode]);
     }
 
-    public function delete(int $id): bool
+    public function delete(int $id, int $year, string $code): bool
     {
-        $s = $this->pdo()->prepare('DELETE FROM ' . self::T . ' WHERE id=:id');
+        $s = $this->pdo()->prepare('DELETE FROM ' . self::T . ' WHERE id_partida=:id AND ano_partida=:y AND codigo_partida=:c');
 
-        return $s->execute([':id' => $id]) && $s->rowCount() > 0;
+        return $s->execute([':id' => $id, ':y' => $year, ':c' => $code]) && $s->rowCount() > 0;
     }
 
     /** @return list<array<string,mixed>> */
     public function allForReport(int $year, string $q = ''): array
     {
         $p = [':y' => $year];
-        $w = ' WHERE year = :y ';
+        $w = ' WHERE ano_partida = :y ';
         if ($q !== '') {
-            $w .= ' AND (name LIKE :q OR code LIKE :q2) ';
+            $w .= ' AND (nombre_partida LIKE :q OR codigo_partida LIKE :q2) ';
             $p[':q'] = '%' . $q . '%';
             $p[':q2'] = '%' . $q . '%';
         }

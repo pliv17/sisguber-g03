@@ -41,10 +41,10 @@ final class WarehouseRepository extends BaseMaestroRepository
         return [$stmt->fetchAll(), $total];
     }
 
-    public function find(int $id): ?array
+    public function find(string $id): ?array
     {
         $stmt = $this->pdo()->prepare(
-            'SELECT codigo_almacen AS code, nombre_almacen AS name, direccion AS address FROM ' . self::TABLE . ' WHERE id = :id LIMIT 1'
+            'SELECT codigo_almacen AS code, nombre_almacen AS name, direccion AS address FROM ' . self::TABLE . ' WHERE codigo_almacen = :id LIMIT 1'
         );
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch();

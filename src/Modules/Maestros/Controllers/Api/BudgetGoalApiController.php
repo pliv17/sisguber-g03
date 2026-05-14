@@ -28,11 +28,18 @@ final class BudgetGoalApiController extends BaseMaestroApiController
     public function show(Request $request): void
     {
         $this->boot($request);
-        $id = (int) ($request->route('id') ?? 0);
-        if ($id < 1) {
+        $id = $request->route('id') ?? '';
+        $parts = $id === '' ? [] : explode('-', $id, 3);
+        if (count($parts) !== 3) {
             JsonResponse::badRequest();
         }
-        $row = $this->service->find($id);
+        [$pkId, $yearStr, $code] = $parts;
+        $year = (int) $yearStr;
+        $idValue = (int) $pkId;
+        if ($idValue <= 0 || $year < 2000) {
+            JsonResponse::badRequest();
+        }
+        $row = $this->service->find($idValue, $year, $code);
         if ($row === null) {
             JsonResponse::notFound();
         }
@@ -48,36 +55,73 @@ final class BudgetGoalApiController extends BaseMaestroApiController
         if ($err !== []) {
             JsonResponse::validationError($err);
         }
-        $id = $this->service->create($body);
-        JsonResponse::created($this->service->find($id) ?? ['id' => $id]);
+        try {
+            $this->service->create($body);
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'DUPLICATE') {
+                JsonResponse::conflict('Código duplicado.');
+            }
+            JsonResponse::error(500, 'Error al guardar.');
+        }
+        $id = (int) $body['id'];
+        $year = (int) $body['year'];
+        $code = trim((string) $body['code']);
+        JsonResponse::created($this->service->find($id, $year, $code) ?? ['id' => $id, 'year' => $year, 'code' => $code, 'name' => $body['name'], 'description' => $body['description'] ?? null]);
     }
 
     public function update(Request $request): void
     {
         $this->boot($request);
         $this->requireCsrf($request);
-        $id = (int) ($request->route('id') ?? 0);
+        $id = $request->route('id') ?? '';
+        $parts = $id === '' ? [] : explode('-', $id, 3);
+        if (count($parts) !== 3) {
+            JsonResponse::badRequest();
+        }
+        [$oldIdStr, $oldYearStr, $oldCode] = $parts;
+        $oldId = (int) $oldIdStr;
+        $oldYear = (int) $oldYearStr;
+        if ($oldId <= 0 || $oldYear < 2000) {
+            JsonResponse::badRequest();
+        }
         $body = $request->isJson() ? $request->json() : $_POST;
         $err = $this->service->validate($body);
         if ($err !== []) {
             JsonResponse::validationError($err);
         }
-        if ($this->service->find($id) === null) {
+        if ($this->service->find($oldId, $oldYear, $oldCode) === null) {
             JsonResponse::notFound();
         }
-        $this->service->update($id, $body);
-        JsonResponse::item($this->service->find($id) ?? []);
+        try {
+            $this->service->update($oldId, $oldYear, $oldCode, $body);
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'DUPLICATE') {
+                JsonResponse::conflict('Código duplicado.');
+            }
+            JsonResponse::error(500, 'Error al actualizar.');
+        }
+        $newId = (int) $body['id'];
+        $newYear = (int) $body['year'];
+        $newCode = trim((string) $body['code']);
+        JsonResponse::item($this->service->find($newId, $newYear, $newCode) ?? []);
     }
 
     public function destroy(Request $request): void
     {
         $this->boot($request);
         $this->requireCsrf($request);
-        $id = (int) ($request->route('id') ?? 0);
-        if ($id < 1) {
+        $id = $request->route('id') ?? '';
+        $parts = $id === '' ? [] : explode('-', $id, 3);
+        if (count($parts) !== 3) {
             JsonResponse::badRequest('Identificador inválido.');
         }
-        if (!$this->service->delete($id)) {
+        [$pkId, $yearStr, $code] = $parts;
+        $year = (int) $yearStr;
+        $idValue = (int) $pkId;
+        if ($idValue <= 0 || $year < 2000) {
+            JsonResponse::badRequest();
+        }
+        if (!$this->service->delete($idValue, $year, $code)) {
             JsonResponse::notFound();
         }
         JsonResponse::noContent();

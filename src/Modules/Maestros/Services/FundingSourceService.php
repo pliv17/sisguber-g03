@@ -22,9 +22,9 @@ final class FundingSourceService
         return $this->repo->paginate($year, $q, $p['offset'], $p['per_page']);
     }
 
-    public function find(int $id): ?array
+    public function find(int $id, int $year, string $code): ?array
     {
-        return $this->repo->find($id);
+        return $this->repo->find($id, $year, $code);
     }
 
     /** @param array<string,mixed> $in @return array<string, list<string>> */
@@ -34,6 +34,10 @@ final class FundingSourceService
         $y = (int) ($in['year'] ?? 0);
         if ($y < 2000 || $y > 2100) {
             $e['year'][] = 'Año inválido.';
+        }
+        $id = (int) ($in['id'] ?? 0);
+        if ($id <= 0) {
+            $e['id'][] = 'ID obligatorio.';
         }
         $c = trim((string) ($in['code'] ?? ''));
         $n = trim((string) ($in['name'] ?? ''));
@@ -55,6 +59,7 @@ final class FundingSourceService
     {
         try {
             return $this->repo->insert(
+                (int) $in['id'],
                 (int) $in['year'],
                 trim((string) $in['code']),
                 trim((string) $in['name']),
@@ -69,11 +74,14 @@ final class FundingSourceService
         }
     }
 
-    public function update(int $id, array $in): void
+    public function update(int $oldId, int $oldYear, string $oldCode, array $in): void
     {
         try {
             $this->repo->update(
-                $id,
+                $oldId,
+                $oldYear,
+                $oldCode,
+                (int) $in['id'],
                 (int) $in['year'],
                 trim((string) $in['code']),
                 trim((string) $in['name']),
@@ -88,9 +96,9 @@ final class FundingSourceService
         }
     }
 
-    public function delete(int $id): bool
+    public function delete(int $id, int $year, string $code): bool
     {
-        return $this->repo->delete($id);
+        return $this->repo->delete($id, $year, $code);
     }
 
     /** @return list<list<string>> */

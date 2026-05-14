@@ -36,34 +36,32 @@ final class MeasureUnitRepository extends BaseMaestroRepository
         return [$stmt->fetchAll(), $total];
     }
 
-    public function find(int $id): ?array
+    public function find(string $code): ?array
     {
-        $stmt = $this->pdo()->prepare('SELECT codigo_medida AS code, nombre_medida AS name FROM ' . self::TABLE . ' WHERE id = :id');
-        $stmt->execute([':id' => $id]);
+        $stmt = $this->pdo()->prepare('SELECT id, codigo_medida AS code, nombre_medida AS name FROM ' . self::TABLE . ' WHERE codigo_medida = :code');
+        $stmt->execute([':code' => $code]);
         $row = $stmt->fetch();
 
         return $row === false ? null : $row;
     }
 
-    public function insert(string $code, string $name): int
+    public function insert(string $code, string $name): void
     {
         $stmt = $this->pdo()->prepare('INSERT INTO ' . self::TABLE . ' (codigo_medida, nombre_medida) VALUES (:c,:n)');
         $stmt->execute([':c' => $code, ':n' => $name]);
-
-        return (int) $this->pdo()->lastInsertId();
     }
 
-    public function update(int $id, string $code, string $name): void
+    public function update(string $oldCode, string $newCode, string $newName): void
     {
-        $stmt = $this->pdo()->prepare('UPDATE ' . self::TABLE . ' SET codigo_medida=:c, nombre_medida=:d WHERE id=:id');
-        $stmt->execute([':c' => $code, ':d' => $name, ':id' => $id]);
+        $stmt = $this->pdo()->prepare('UPDATE ' . self::TABLE . ' SET codigo_medida=:nc, nombre_medida=:nn WHERE codigo_medida=:oc');
+        $stmt->execute([':nc' => $newCode, ':nn' => $newName, ':oc' => $oldCode]);
     }
 
-    public function delete(int $id): bool
+    public function delete(string $code): bool
     {
-        $stmt = $this->pdo()->prepare('DELETE FROM ' . self::TABLE . ' WHERE id=:id');
+        $stmt = $this->pdo()->prepare('DELETE FROM ' . self::TABLE . ' WHERE codigo_medida=:code');
 
-        return $stmt->execute([':id' => $id]) && $stmt->rowCount() > 0;
+        return $stmt->execute([':code' => $code]) && $stmt->rowCount() > 0;
     }
 
     /** @return list<array<string,mixed>> */

@@ -27,11 +27,11 @@ final class MeasureUnitApiController extends BaseMaestroApiController
     public function show(Request $request): void
     {
         $this->boot($request);
-        $id = (int) ($request->route('id') ?? 0);
-        if ($id < 1) {
-            JsonResponse::badRequest('Identificador inválido.');
+        $code = $request->route('id') ?? '';
+        if ($code === '') {
+            JsonResponse::badRequest('Código inválido.');
         }
-        $row = $this->service->find($id);
+        $row = $this->service->find($code);
         if ($row === null) {
             JsonResponse::notFound();
         }
@@ -48,49 +48,50 @@ final class MeasureUnitApiController extends BaseMaestroApiController
             JsonResponse::validationError($err);
         }
         try {
-            $id = $this->service->create($body);
+            $code = $this->service->create($body);
         } catch (\RuntimeException $e) {
             if ($e->getMessage() === 'DUPLICATE') {
                 JsonResponse::conflict('Código duplicado.');
             }
             JsonResponse::error(500, 'Error al guardar.');
         }
-        JsonResponse::created($this->service->find($id) ?? ['id' => $id]);
+        JsonResponse::created($this->service->find($code) ?? ['code' => $code, 'name' => $body['description']]);
     }
 
     public function update(Request $request): void
     {
         $this->boot($request);
         $this->requireCsrf($request);
-        $id = (int) ($request->route('id') ?? 0);
+        $oldCode = $request->route('id') ?? '';
         $body = $request->isJson() ? $request->json() : $_POST;
         $err = $this->service->validate($body);
         if ($err !== []) {
             JsonResponse::validationError($err);
         }
-        if ($this->service->find($id) === null) {
+        if ($this->service->find($oldCode) === null) {
             JsonResponse::notFound();
         }
         try {
-            $this->service->update($id, $body);
+            $this->service->update($oldCode, $body);
         } catch (\RuntimeException $e) {
             if ($e->getMessage() === 'DUPLICATE') {
                 JsonResponse::conflict('Código duplicado.');
             }
             JsonResponse::error(500, 'Error al actualizar.');
         }
-        JsonResponse::item($this->service->find($id) ?? []);
+        $newCode = trim((string) $body['code']);
+        JsonResponse::item($this->service->find($newCode) ?? []);
     }
 
     public function destroy(Request $request): void
     {
         $this->boot($request);
         $this->requireCsrf($request);
-        $id = (int) ($request->route('id') ?? 0);
-        if ($id < 1) {
-            JsonResponse::badRequest('Identificador inválido.');
+        $code = $request->route('id') ?? '';
+        if ($code === '') {
+            JsonResponse::badRequest('Código inválido.');
         }
-        if (!$this->service->delete($id)) {
+        if (!$this->service->delete($code)) {
             JsonResponse::notFound();
         }
         JsonResponse::noContent();

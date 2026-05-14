@@ -29,8 +29,8 @@ final class WarehouseApiController extends BaseMaestroApiController
     public function show(Request $request): void
     {
         $this->boot($request);
-        $id = (int) ($request->route('id') ?? '0');
-        if ($id < 1) {
+        $id = $request->route('id') ?? '0';
+        if ($id === '') {
             JsonResponse::badRequest('Identificador inválido.');
         }
         $row = $this->service->find($id);
@@ -65,8 +65,8 @@ final class WarehouseApiController extends BaseMaestroApiController
     {
         $this->boot($request);
         $this->requireCsrf($request);
-        $id = (int) ($request->route('id') ?? '0');
-        if ($id < 1) {
+        $id = $request->route('id') ?? '0';
+        if ($id === '') {
             JsonResponse::badRequest('Identificador inválido.');
         }
         $body = $request->isJson() ? $request->json() : $_POST;
@@ -92,8 +92,8 @@ final class WarehouseApiController extends BaseMaestroApiController
     {
         $this->boot($request);
         $this->requireCsrf($request);
-        $id = (int) ($request->route('id') ?? '0');
-        if ($id < 1) {
+        $id = $request->route('id') ?? '0';
+        if ($id === '') {
             JsonResponse::badRequest('Identificador inválido.');
         }
         if (!$this->service->delete($id)) {
