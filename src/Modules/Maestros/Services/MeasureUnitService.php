@@ -32,12 +32,12 @@ final class MeasureUnitService
     {
         $e = [];
         $c = trim((string) ($input['code'] ?? ''));
-        $d = trim((string) ($input['description'] ?? ''));
+        $d = trim((string) ($input['name'] ?? ''));
         if ($c === '' || strlen($c) > 20) {
             $e['code'][] = 'Código obligatorio, máx. 20.';
         }
         if ($d === '' || strlen($d) > 255) {
-            $e['description'][] = 'Descripción obligatoria, máx. 255.';
+            $e['name'][] = 'Nombre obligatorio, máx. 255.';
         }
 
         return $e;
@@ -46,7 +46,7 @@ final class MeasureUnitService
     public function create(array $input): string
     {
         try {
-            $this->repo->insert(trim((string) $input['code']), trim((string) $input['description']));
+            $this->repo->insert(trim((string) $input['code']), trim((string) $input['name']));
             return trim((string) $input['code']);
         } catch (PDOException $ex) {
             if (($ex->errorInfo[1] ?? null) === 1062) {
@@ -60,7 +60,7 @@ final class MeasureUnitService
     public function update(string $oldCode, array $input): void
     {
         try {
-            $this->repo->update($oldCode, trim((string) $input['code']), trim((string) $input['description']));
+            $this->repo->update($oldCode, trim((string) $input['code']), trim((string) $input['name']));
         } catch (PDOException $ex) {
             if (($ex->errorInfo[1] ?? null) === 1062) {
                 throw new \RuntimeException('DUPLICATE', 409);
@@ -80,7 +80,7 @@ final class MeasureUnitService
     {
         $o = [];
         foreach ($this->repo->allForReport($q) as $r) {
-            $o[] = [(string) $r['code'], (string) $r['description']];
+            $o[] = [(string) $r['code'], (string) $r['name']];
         }
 
         return $o;

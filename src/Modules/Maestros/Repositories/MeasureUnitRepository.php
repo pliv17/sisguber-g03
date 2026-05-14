@@ -38,7 +38,7 @@ final class MeasureUnitRepository extends BaseMaestroRepository
 
     public function find(string $code): ?array
     {
-        $stmt = $this->pdo()->prepare('SELECT id, codigo_medida AS code, nombre_medida AS name FROM ' . self::TABLE . ' WHERE codigo_medida = :code');
+        $stmt = $this->pdo()->prepare('SELECT codigo_medida AS code, nombre_medida AS name FROM ' . self::TABLE . ' WHERE codigo_medida = :code');
         $stmt->execute([':code' => $code]);
         $row = $stmt->fetch();
 
@@ -70,7 +70,7 @@ final class MeasureUnitRepository extends BaseMaestroRepository
         $params = [];
         $where = '';
         if ($q !== '') {
-            $where = ' WHERE name LIKE :q ';
+            $where = ' WHERE nombre_medida LIKE :q ';
             $params[':q'] = '%' . $q . '%';
         }
         $stmt = $this->pdo()->prepare('SELECT codigo_medida AS code, nombre_medida AS name FROM ' . self::TABLE . $where . ' ORDER BY codigo_medida');

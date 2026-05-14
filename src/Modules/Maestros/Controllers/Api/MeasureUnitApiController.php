@@ -48,14 +48,14 @@ final class MeasureUnitApiController extends BaseMaestroApiController
             JsonResponse::validationError($err);
         }
         try {
-            $code = $this->service->create($body);
+            $code = $this->service->create($body);  
         } catch (\RuntimeException $e) {
             if ($e->getMessage() === 'DUPLICATE') {
                 JsonResponse::conflict('Código duplicado.');
             }
             JsonResponse::error(500, 'Error al guardar.');
         }
-        JsonResponse::created($this->service->find($code) ?? ['code' => $code, 'name' => $body['description']]);
+        JsonResponse::created($this->service->find($code) ?? ['code' => $code, 'name' => $body['name']]);
     }
 
     public function update(Request $request): void
@@ -100,6 +100,6 @@ final class MeasureUnitApiController extends BaseMaestroApiController
     public function report(Request $request): void
     {
         $this->boot($request);
-        MaestroPdf::stream('unidades-medida.pdf', 'Unidades de medida', ['Código', 'Descripción'], $this->service->rowsForPdf($this->searchQuery($request)));
+        MaestroPdf::stream('unidades-medida.pdf', 'Unidades de medida', ['Código', 'Nombre'], $this->service->rowsForPdf($this->searchQuery($request)));
     }
 }
