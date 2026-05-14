@@ -62,9 +62,9 @@ final class WarehouseService
 
     /**
      * @param array<string, mixed> $input
-     * @return array<string, mixed>|null fila creada o null si errores (no usar aquí)
+     * @return string código insertado
      */
-    public function create(array $input): int
+    public function create(array $input): string
     {
         $code = trim((string) ($input['code'] ?? ''));
         $name = trim((string) ($input['name'] ?? ''));
@@ -81,7 +81,7 @@ final class WarehouseService
         }
     }
 
-    public function update(int $id, array $input): void
+    public function update(string $id, array $input): void
     {
         $code = trim((string) ($input['code'] ?? ''));
         $name = trim((string) ($input['name'] ?? ''));
@@ -97,7 +97,7 @@ final class WarehouseService
         }
     }
 
-    public function delete(int $id): bool
+    public function delete(string $id): bool
     {
         return $this->repo->delete($id);
     }

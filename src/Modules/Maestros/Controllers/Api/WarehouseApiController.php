@@ -58,7 +58,7 @@ final class WarehouseApiController extends BaseMaestroApiController
             JsonResponse::error(500, 'Error al guardar.');
         }
         $row = $this->service->find($id);
-        JsonResponse::created($row ?? ['id' => $id]);
+        JsonResponse::created($row ?? ['code' => $id]);
     }
 
     public function update(Request $request): void

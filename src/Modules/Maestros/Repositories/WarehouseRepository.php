@@ -41,22 +41,22 @@ final class WarehouseRepository extends BaseMaestroRepository
         return [$stmt->fetchAll(), $total];
     }
 
-    public function find(string $id): ?array
+    public function find(string $code): ?array
     {
         $stmt = $this->pdo()->prepare(
-            'SELECT codigo_almacen AS code, nombre_almacen AS name, direccion AS address FROM ' . self::TABLE . ' WHERE codigo_almacen = :id LIMIT 1'
+            'SELECT codigo_almacen AS code, nombre_almacen AS name, direccion AS address FROM ' . self::TABLE . ' WHERE codigo_almacen = :code LIMIT 1'
         );
-        $stmt->execute([':id' => $id]);
+        $stmt->execute([':code' => $code]);
         $row = $stmt->fetch();
 
         return $row === false ? null : $row;
     }
 
     /**
-     * @return int nuevo id
+     * @return string nuevo código
      * @throws PDOException
      */
-    public function insert(string $code, string $name, string $address): int
+    public function insert(string $code, string $name, string $address): string
     {
         $stmt = $this->pdo()->prepare(
             'INSERT INTO ' . self::TABLE . ' (codigo_almacen, nombre_almacen, direccion) VALUES (:code, :name, :address)'
@@ -67,27 +67,27 @@ final class WarehouseRepository extends BaseMaestroRepository
             ':address' => $address,
         ]);
 
-        return (int) $this->pdo()->lastInsertId();
+        return $code;
     }
 
-    public function update(int $id, string $code, string $name, string $address): void
+    public function update(string $oldCode, string $code, string $name, string $address): void
     {
         $stmt = $this->pdo()->prepare(
-            'UPDATE ' . self::TABLE . ' SET codigo_almacen = :code, nombre_almacen = :name, direccion = :address WHERE id = :id'
+            'UPDATE ' . self::TABLE . ' SET codigo_almacen = :code, nombre_almacen = :name, direccion = :address WHERE codigo_almacen = :old_code'
         );
         $stmt->execute([
-            ':code'    => $code,
-            ':name'    => $name,
-            ':address' => $address,
-            ':id'      => $id,
+            ':code'     => $code,
+            ':name'     => $name,
+            ':address'  => $address,
+            ':old_code' => $oldCode,
         ]);
     }
 
-    public function delete(int $id): bool
+    public function delete(string $code): bool
     {
-        $stmt = $this->pdo()->prepare('DELETE FROM ' . self::TABLE . ' WHERE id = :id');
+        $stmt = $this->pdo()->prepare('DELETE FROM ' . self::TABLE . ' WHERE codigo_almacen = :code');
 
-        return $stmt->execute([':id' => $id]) && $stmt->rowCount() > 0;
+        return $stmt->execute([':code' => $code]) && $stmt->rowCount() > 0;
     }
 
     /**
