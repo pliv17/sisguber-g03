@@ -30,7 +30,7 @@ composer install
 
 # 3. Configurar entorno
 cp .env.example .env
-# Edita .env con tus datos de base de datos y APP_URL
+# Edita .env (si no existe .env.example, copia las claves mínimas del README)
 
 # 4. Crear la base de datos (si aún no existe)
 mysql -u root -p -e "CREATE DATABASE abastecimiento CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
@@ -80,6 +80,7 @@ Asegúrate de que `mod_rewrite` esté habilitado en `httpd.conf`.
 | `DB_PASS` | Contraseña de MySQL | *(vacío en local)* |
 | `APP_TIMEZONE` | Zona horaria PHP | `America/Lima` |
 | `SESSION_NAME` | Nombre de la cookie de sesión | `abastecimiento_session` |
+| `AUTH_DEMO` | `true`: usuario demo autenticado en desarrollo (ver README Maestros) | `false` |
 
 **Nunca subas `.env` al repositorio.** Solo `.env.example`.
 
@@ -140,6 +141,65 @@ abastecimiento/
 | GET | `/` | Página de bienvenida con panel de estado |
 | GET | `/health` | JSON con estado del sistema y BD |
 | GET | `/api/ping` | JSON para prueba Ajax (`app.js`) |
+
+---
+
+## Módulo Maestros (Archivos maestros)
+
+Tablas y datos de referencia para abastecimiento: almacenes, unidades, rubros, proveedores, catálogos, oficinas, fuentes/metas/partidas presupuestales.
+
+### Base de datos
+
+Importa el esquema (utf8mb4) sobre la base configurada en `.env`:
+
+```bash
+mysql -u "$DB_USER" -p"$DB_PASS" -h "$DB_HOST" "$DB_NAME" < database/schema_maestros.sql
+```
+
+### Autenticación y demo
+
+Las rutas `/maestros/...` y `/api/maestros/...` exigen sesión autenticada. En desarrollo puedes activar un usuario demo en `.env`:
+
+| Variable | Descripción |
+|---|---|
+| `AUTH_DEMO` | `true`: si no hay sesión, se asigna `user_id=1` y rol `admin`. `false` en producción. |
+
+### API JSON (`/api/maestros/...`)
+
+Listados: `GET` con `q`, `page`, `per_page`. Respuesta: `{ ok, message, data, meta: { total, page, per_page } }`.
+
+Fuentes, metas y partidas incluyen `year` (año de ejercicio; por defecto año calendario actual si el backend lo define así).
+
+| Recurso | Base URL |
+|---|---|
+| Almacenes | `/api/maestros/almacenes` |
+| Unidades de medida | `/api/maestros/unidades-medida` |
+| Rubros proveedor | `/api/maestros/rubros-proveedor` |
+| Proveedores (PK en URL = RUC) | `/api/maestros/proveedores` y `/api/maestros/proveedores/{ruc}` |
+| Catálogo bienes | `/api/maestros/productos` |
+| Catálogo servicios | `/api/maestros/servicios` |
+| Oficinas | `/api/maestros/oficinas` |
+| Fuentes financiamiento | `/api/maestros/fuentes-financiamiento?year=` |
+| Metas presupuestales | `/api/maestros/metas?year=` |
+| Partidas presupuestales | `/api/maestros/partidas?year=` |
+
+Mutaciones (`POST`, `PUT`, `PATCH`, `DELETE`): enviar cabecera `X-CSRF-TOKEN` con el valor de `<meta name="csrf-token">` (o campo equivalente).
+
+### Informes PDF (sustituto de `reportemedida.php` y similares)
+
+Cada recurso con listado expone `GET .../report` (misma base que la tabla). Abre o descarga un PDF generado con **Dompdf** (`composer install` debe instalar `dompdf/dompdf`). Ejemplos:
+
+- `GET /api/maestros/unidades-medida/report?q=`
+- `GET /api/maestros/proveedores/report`
+- `GET /api/maestros/fuentes-financiamiento/report?year=2026`
+
+### RUC (proveedores)
+
+Validación de forma Perú: **11 dígitos numéricos** (sin dígito de control SUNAT en esta versión). Ver `App\Modules\Maestros\Support\RucValidator`.
+
+### Interfaz web
+
+Rutas bajo `/maestros/...` (listado Ajax, modales CRUD, PDF). Código: `src/Controllers/Maestros/MaestrosController.php`, vistas `views/maestros/`, JS `public/js/maestros/list.js`.
 
 ---
 

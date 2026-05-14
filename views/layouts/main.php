@@ -18,6 +18,7 @@ declare(strict_types=1);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
     <meta name="description" content="Sistema de Abastecimiento y Almacén">
     <title><?= e($pageTitle ?? 'Sistema de Abastecimiento') ?></title>
 
@@ -127,5 +128,8 @@ declare(strict_types=1);
 <script>window.APP_URL_BASE = <?= json_encode(rtrim($_ENV['APP_URL'] ?? '', '/'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
 <!-- JS propio -->
 <script src="<?= e(asset('js/app.js')) ?>"></script>
+<?php if (!empty($maestroList ?? null)): ?>
+<script src="<?= e(asset('js/maestros/list.js')) ?>"></script>
+<?php endif; ?>
 </body>
 </html>

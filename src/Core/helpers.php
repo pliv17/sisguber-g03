@@ -117,6 +117,16 @@ if (!function_exists('nav_dd_active')) {
     }
 }
 
+if (!function_exists('csrf_token')) {
+    /**
+     * Token CSRF actual (sesión).
+     */
+    function csrf_token(): string
+    {
+        return \App\Core\Csrf::token();
+    }
+}
+
 if (!function_exists('nav_context_title')) {
     /**
      * Título corto para la barra de contexto (quita sufijo "— Sistema…").

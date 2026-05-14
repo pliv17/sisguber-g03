@@ -5,56 +5,115 @@ declare(strict_types=1);
 namespace App\Core;
 
 /**
- * Router — Enrutador ligero para el sistema de abastecimiento.
+ * Router — Enrutador con rutas estáticas y dinámicas `{param}`.
  *
- * Uso en routes/web.php:
- *   $router->get('/ruta', [MiController::class, 'metodo']);
- *   $router->post('/ruta', [MiController::class, 'metodo']);
+ * Las rutas con `{nombre}` se resuelven como `[^/]+`. Los parámetros se
+ * inyectan en {@see Request::setRouteParams()} antes de llamar al controlador.
  */
 class Router
 {
     /** @var array<string, array<string, array{0: string, 1: string}>> */
-    private array $routes = [];
+    private array $staticRoutes = [];
 
     /**
-     * Registra una ruta GET.
-     *
-     * @param string $uri
-     * @param array{0: class-string, 1: string} $action [ControllerClass, 'method']
+     * @var array<string, list<array{regex: string, paramNames: list<string>, action: array{0: string, 1: string}}>>
      */
+    private array $dynamicRoutes = [];
+
     public function get(string $uri, array $action): void
     {
-        $this->addRoute('GET', $uri, $action);
+        $this->add('GET', $uri, $action);
     }
 
-    /**
-     * Registra una ruta POST.
-     */
     public function post(string $uri, array $action): void
     {
-        $this->addRoute('POST', $uri, $action);
+        $this->add('POST', $uri, $action);
     }
 
-    private function addRoute(string $method, string $uri, array $action): void
+    public function put(string $uri, array $action): void
     {
-        $this->routes[$method][rtrim($uri, '/') ?: '/'] = $action;
+        $this->add('PUT', $uri, $action);
+    }
+
+    public function patch(string $uri, array $action): void
+    {
+        $this->add('PATCH', $uri, $action);
+    }
+
+    public function delete(string $uri, array $action): void
+    {
+        $this->add('DELETE', $uri, $action);
     }
 
     /**
-     * Despacha la petición al controlador correspondiente.
+     * @param array{0: class-string, 1: string} $action
      */
+    private function add(string $method, string $uri, array $action): void
+    {
+        $uri = rtrim($uri, '/') ?: '/';
+        if (str_contains($uri, '{')) {
+            [$regex, $names] = $this->compilePattern($uri);
+            $this->dynamicRoutes[$method][] = [
+                'regex'      => $regex,
+                'paramNames' => $names,
+                'action'     => $action,
+            ];
+            return;
+        }
+        $this->staticRoutes[$method][$uri] = $action;
+    }
+
+    /**
+     * @return array{0: string, 1: list<string>}
+     */
+    private function compilePattern(string $uri): array
+    {
+        $names = [];
+        $regexBody = preg_replace_callback(
+            '/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/',
+            static function (array $m) use (&$names): string {
+                $names[] = $m[1];
+
+                return '(?P<' . $m[1] . '>[^/]+)';
+            },
+            $uri
+        );
+
+        return ['#^' . $regexBody . '$#u', $names];
+    }
+
     public function dispatch(Request $request): void
     {
         $method = $request->method();
-        $uri    = rtrim($request->uri(), '/') ?: '/';
+        $uri     = rtrim($request->uri(), '/') ?: '/';
 
-        $action = $this->routes[$method][$uri] ?? null;
+        $request->setRouteParams([]);
 
-        if ($action === null) {
-            $this->notFound();
+        if (isset($this->staticRoutes[$method][$uri])) {
+            $this->invoke($request, $this->staticRoutes[$method][$uri]);
             return;
         }
 
+        foreach ($this->dynamicRoutes[$method] ?? [] as $route) {
+            if (preg_match($route['regex'], $uri, $matches)) {
+                $params = [];
+                foreach ($route['paramNames'] as $name) {
+                    $params[$name] = $matches[$name] ?? ($matches[1] ?? null);
+                }
+                $request->setRouteParams($params);
+                $this->invoke($request, $route['action']);
+                return;
+            }
+        }
+
+        $this->notFound();
+    }
+
+    /**
+     * @param array{0: string, 1: string} $action
+     */
+    private function invoke(Request $request, array $action): void
+    {
         [$controllerClass, $methodName] = $action;
 
         if (!class_exists($controllerClass)) {

@@ -6,10 +6,25 @@ namespace App\Core;
 
 /**
  * Request — Encapsula la petición HTTP entrante.
- * Nunca uses $_GET/$_POST directamente en controladores; usa esta clase.
  */
 class Request
 {
+    /** @var array<string, string> */
+    private array $routeParams = [];
+
+    /**
+     * @param array<string, string> $params
+     */
+    public function setRouteParams(array $params): void
+    {
+        $this->routeParams = $params;
+    }
+
+    public function route(string $key, ?string $default = null): ?string
+    {
+        return $this->routeParams[$key] ?? $default;
+    }
+
     public function method(): string
     {
         return strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
@@ -17,7 +32,6 @@ class Request
 
     /**
      * URI sin query string, relativa al prefijo de ruta de APP_URL (si existe).
-     * Coincide con las rutas registradas en routes/web.php (p. ej. /maestros/almacenes).
      */
     public function uri(): string
     {
@@ -37,34 +51,56 @@ class Request
         return rtrim($path, '/') ?: '/';
     }
 
-    /**
-     * Parámetro GET saneado.
-     */
     public function query(string $key, mixed $default = null): mixed
     {
         return isset($_GET[$key]) ? $this->sanitize($_GET[$key]) : $default;
     }
 
-    /**
-     * Parámetro POST saneado.
-     */
     public function input(string $key, mixed $default = null): mixed
     {
         return isset($_POST[$key]) ? $this->sanitize($_POST[$key]) : $default;
     }
 
     /**
-     * Cuerpo JSON decodificado (para peticiones Ajax JSON).
+     * Cabecera HTTP (comparación case-insensitive).
      */
-    public function json(): mixed
+    public function header(string $name): ?string
     {
-        $body = file_get_contents('php://input');
-        return json_decode($body ?: '{}', true);
+        $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+        foreach ($_SERVER as $k => $v) {
+            if (strtoupper($k) === $key && is_string($v)) {
+                return $v;
+            }
+        }
+        return null;
+    }
+
+    public function isJson(): bool
+    {
+        $ct = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '';
+        return is_string($ct) && str_contains(strtolower($ct), 'application/json');
     }
 
     /**
-     * ¿Es una petición XMLHttpRequest (Ajax)?
+     * Cuerpo JSON decodificado (array). Si no es JSON válido, devuelve [].
+     *
+     * @return array<string, mixed>
      */
+    public function json(): array
+    {
+        $body = (string) file_get_contents('php://input');
+        if ($body === '') {
+            return [];
+        }
+        try {
+            $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return [];
+        }
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
     public function isAjax(): bool
     {
         return ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest';
@@ -80,15 +116,27 @@ class Request
         return $this->method() === 'POST';
     }
 
-    /**
-     * Sanea un valor escalar. Arrays se procesan recursivamente.
-     * IMPORTANTE: No uses esto para HTML — usa htmlspecialchars() en las vistas.
-     */
+    public function isPut(): bool
+    {
+        return $this->method() === 'PUT';
+    }
+
+    public function isPatch(): bool
+    {
+        return $this->method() === 'PATCH';
+    }
+
+    public function isDelete(): bool
+    {
+        return $this->method() === 'DELETE';
+    }
+
     private function sanitize(mixed $value): mixed
     {
         if (is_array($value)) {
             return array_map([$this, 'sanitize'], $value);
         }
+
         return is_string($value) ? trim(strip_tags($value)) : $value;
     }
 }
