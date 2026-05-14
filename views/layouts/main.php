@@ -39,50 +39,52 @@ declare(strict_types=1);
 <body class="d-flex flex-column min-vh-100" data-current-path="<?= e(request_path()) ?>">
 
 <!-- ══════════════════════════════════════════
-     NAVBAR principal
+     Cabecera: menú + ubicación (la ruta va FUERA de <nav> para no tapar los dropdowns)
      ══════════════════════════════════════════ -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-    <div class="container-fluid">
+<header class="app-top-header bg-primary shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark py-0" aria-label="Principal">
+        <div class="container-fluid d-flex flex-wrap align-items-center py-2">
+            <a class="navbar-brand fw-bold mb-0" href="<?= e(url('/')) ?>">
+                <i class="bi bi-box-seam me-2"></i>Abastecimiento
+            </a>
 
-        <!-- Brand -->
-        <a class="navbar-brand fw-bold" href="<?= e(url('/')) ?>">
-            <i class="bi bi-box-seam me-2"></i>Abastecimiento
-        </a>
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarMain"
+                aria-controls="navbarMain"
+                aria-expanded="false"
+                aria-label="Alternar menú de navegación"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarMain"
-            aria-controls="navbarMain"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-        >
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse d-lg-flex align-items-lg-center" id="navbarMain">
-            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between w-100 flex-lg-grow-1 gap-2">
+            <div class="collapse navbar-collapse w-100" id="navbarMain">
                 <?php require BASE_PATH . '/views/partials/nav-main.php'; ?>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <div class="container-fluid border-top border-white border-opacity-25 py-1 px-3 small nav-context-bar d-none d-md-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div class="text-white-50 d-flex align-items-center gap-2 min-w-0">
+    <div
+        class="nav-context-bar border-top border-white border-opacity-25 w-100 py-2 px-3 px-lg-4 small d-none d-md-flex flex-wrap align-items-center justify-content-between gap-2"
+        role="status"
+        aria-label="Ubicación en la aplicación"
+    >
+        <div class="text-white-50 d-flex align-items-center gap-2 min-w-0 flex-grow-1">
             <i class="bi bi-signpost-2 flex-shrink-0" aria-hidden="true"></i>
             <code class="nav-context-path text-white-50 small mb-0 text-truncate"><?= e(request_path()) ?></code>
         </div>
         <?php
         $_nav_ctx = nav_context_title($pageTitle ?? null);
         if ($_nav_ctx !== ''): ?>
-            <div class="text-white text-opacity-90 text-truncate" title="<?= e($_nav_ctx) ?>">
+            <div class="text-white text-opacity-90 text-truncate flex-shrink-0 nav-context-title" title="<?= e($_nav_ctx) ?>">
                 <?= e($_nav_ctx) ?>
             </div>
         <?php endif; ?>
     </div>
-</nav>
-<!-- /NAVBAR -->
+</header>
+<!-- /CABECERA -->
 
 <!-- ══════════════════════════════════════════
      CONTENIDO PRINCIPAL
@@ -113,14 +115,12 @@ declare(strict_types=1);
 
 <!-- jQuery 3.x -->
 <script
-    src="https://code.jquery.com/jquery-3.7.1.min.js"
-    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    src="https://code.jquery.com/jquery-3.7.1.min.js?v=1"
     crossorigin="anonymous"
 ></script>
 <!-- Bootstrap 5 JS Bundle (incluye Popper) -->
 <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmAYEAqTbcBNopGFn5Q6dpLqFoGv"
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js?v=1"
     crossorigin="anonymous"
 ></script>
 <!-- URL base para Ajax (misma origen que APP_URL) -->

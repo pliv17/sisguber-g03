@@ -32,7 +32,9 @@ $(function () {
             }
         }
 
-        navbarCollapse.querySelectorAll('a.nav-link[href], a.dropdown-item[href]').forEach(function (anchor) {
+        navbarCollapse
+            .querySelectorAll('.dropdown-item[href], a.nav-link[href]:not(.dropdown-toggle)')
+            .forEach(function (anchor) {
             const href = anchor.getAttribute('href');
             if (!href || href === '#' || href.startsWith('javascript:')) {
                 return;

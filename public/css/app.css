@@ -52,14 +52,33 @@ main.container-fluid {
 }
 
 /* Segunda fila de contexto bajo el menú */
-.nav-context-bar .nav-context-path {
-    background: transparent;
-    font-size: 0.8rem;
+.nav-context-bar .nav-context-title {
+    max-width: min(50%, 24rem);
 }
 
-/* Menú desplegable ancho en escritorio (listas largas) */
+
+/* Cabecera (menú + franja de ruta): un solo bloque visual */
+.app-top-header {
+    position: relative;
+    z-index: 1030; /* por encima del contenido, mismo orden que navbar fija BS */
+}
+
+/* Los dropdown deben superponerse al <main> y no quedar bajo él */
+.app-top-header .navbar .dropdown-menu {
+    z-index: 1040;
+}
+
+/* Menú desplegable: en escritorio no recortar con overflow del collapse */
 @media (min-width: 992px) {
-    .navbar .dropdown-menu-lg-start {
+    .app-top-header .navbar .navbar-collapse {
+        overflow: visible !important;
+    }
+
+    .app-top-header .navbar > .container-fluid {
+        overflow: visible;
+    }
+
+    .app-top-header .navbar .dropdown-menu-lg-start {
         max-height: min(70vh, 28rem);
         overflow-y: auto;
     }
