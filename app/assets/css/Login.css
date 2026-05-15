@@ -1,0 +1,130 @@
+/* auth/login.css - Página de inicio de sesión */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a6e 60%, #1d4ed8 100%);
+}
+
+.login-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #fff;
+}
+
+.login-brand { max-width: 420px; }
+
+.login-brand .logo {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 2.5rem;
+}
+.login-brand .logo-icon {
+  width: 56px; height: 56px;
+  background: rgba(245,159,11,.2);
+  border: 1px solid rgba(245,159,11,.4);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+}
+.login-brand .logo-text h1 { font-size: 1.6rem; font-weight: 700; }
+.login-brand .logo-text p  { font-size: .85rem; color: rgba(255,255,255,.55); margin-top: 2px; }
+
+.login-brand .description {
+  font-size: .95rem;
+  color: rgba(255,255,255,.65);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.login-brand .features { display: flex; flex-direction: column; gap: .7rem; }
+.login-brand .feature-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .875rem; color: rgba(255,255,255,.7);
+}
+.login-brand .feature-icon {
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,.08);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+
+.login-right {
+  width: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #f8fafc;
+}
+
+.login-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.15);
+  padding: 2.5rem;
+}
+
+.login-card .card-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: .35rem;
+}
+.login-card .card-subtitle {
+  font-size: .875rem;
+  color: #94a3b8;
+  margin-bottom: 2rem;
+}
+
+.login-card .municipalidad {
+  display: flex; align-items: center; gap: 10px;
+  padding: .75rem;
+  background: #f1f5f9;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+.login-card .municipalidad img {
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover;
+}
+.login-card .municipalidad span {
+  font-size: .8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.login-card .divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 1.5rem 0;
+}
+
+.login-card .footer-text {
+  font-size: .75rem;
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.password-wrapper { position: relative; }
+.password-wrapper .form-control { padding-right: 2.5rem; }
+.password-toggle {
+  position: absolute; right: .75rem; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: #94a3b8; font-size: 1rem;
+  padding: 0; transition: color .15s;
+}
+.password-toggle:hover { color: #475569; }
+
+@media (max-width: 768px) {
+  .login-left  { display: none; }
+  .login-right { width: 100%; background: linear-gradient(135deg, #0f172a, #1d4ed8); }
+  .login-card  { background: rgba(255,255,255,.97); }
+}
