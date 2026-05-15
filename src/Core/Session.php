@@ -35,7 +35,21 @@ class Session
             'samesite' => 'Strict',   // ← Mitiga CSRF
         ]);
 
-        session_start();
+        $savePath = ini_get('session.save_path') ?: sys_get_temp_dir();
+        if (strpos($savePath, ';') !== false) {
+            $parts = explode(';', $savePath);
+            $savePath = trim(end($parts));
+        }
+        if ($savePath === '' || !is_dir($savePath) || !is_writable($savePath)) {
+            $fallback = sys_get_temp_dir();
+            if (is_dir($fallback) && is_writable($fallback)) {
+                session_save_path($fallback);
+            }
+        }
+
+        if (!@session_start()) {
+            throw new \RuntimeException('No se pudo iniciar la sesión.');
+        }
     }
 
     /**
